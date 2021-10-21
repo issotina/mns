@@ -7,7 +7,7 @@ const pkgs = struct {
     };
     const clap = std.build.Pkg{
         .name = "clap",
-        .path = .{ .path = "deps/clap/clap.zig" },
+        .path = .{ .path = "deps/zig-clap/clap.zig" },
     };
 };
 

@@ -1,4 +1,3 @@
 [submodule "deps/network"]
 	path = deps/network
 	url = https://github.com/MasterQ32/zig-network.git
-

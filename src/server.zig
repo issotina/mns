@@ -57,6 +57,7 @@ pub const Server = struct {
         try network.init();
 
         var srv = try network.Socket.create(.ipv4, .udp);
+        srv.enablePortReuse(true);
         return Server{ .server = srv, .options = .{ .ip = ip, .port = port } };
     }
 

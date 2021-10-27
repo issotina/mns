@@ -5,9 +5,9 @@ const pkgs = struct {
         .name = "network",
         .path = .{ .path = "deps/network/network.zig" },
     };
-    const clap = std.build.Pkg{
-        .name = "clap",
-        .path = .{ .path = "deps/zig-clap/clap.zig" },
+    const lmdb = std.build.Pkg{
+        .name = "lmdb",
+        .path = .{ .path = "deps/lmdb/lmdb.zig" },
     };
 };
 
@@ -22,11 +22,16 @@ pub fn build(b: *std.build.Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    const exe = b.addExecutable("mns", "src/main_server.zig");
+    const exe = b.addExecutable("mns", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
+    exe.linkLibC();
+    exe.addIncludeDir("deps/liblmdb/libraries/liblmdb");
+    exe.addCSourceFiles(&[2][]const u8{ "deps/liblmdb/libraries/liblmdb/mdb.c", "deps/liblmdb/libraries/liblmdb/midl.c" }, &[1][]const u8{
+        "-fno-sanitize=undefined",
+    });
     exe.addPackage(pkgs.network);
-    exe.addPackage(pkgs.clap);
+    exe.addPackage(pkgs.lmdb);
     exe.install();
 
     const run_cmd = exe.run();

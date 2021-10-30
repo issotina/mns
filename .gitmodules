@@ -10,4 +10,4 @@
 [submodule "deps/zig-clap"]
 	path = deps/zig-clap
 	url = https://github.com/issotina/zig-clap.git
-	branch = zig-master
+	branch = zig-master 

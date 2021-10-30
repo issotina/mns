@@ -4,7 +4,6 @@ const Server = @import("server.zig").Server;
 const IPv4 = @import("server.zig").IPv4;
 const clap = @import("clap");
 const config = @import("config.zig");
-const allocator = std.heap.page_allocator;
 
 pub fn main() anyerror!void {
     const params = comptime [_]clap.Param(clap.Help){
@@ -14,6 +13,8 @@ pub fn main() anyerror!void {
         clap.parseParam("-p, --port <NUM>    default port for dns server") catch unreachable,
         clap.parseParam("-d, --dir <STR>    where data files should be persisted") catch unreachable,
     };
+    const allocator = std.heap.page_allocator;
+    
     var iter = try clap.args.OsIterator.init(allocator);
     defer iter.deinit();
     var diag = clap.Diagnostic{};
@@ -26,7 +27,11 @@ pub fn main() anyerror!void {
     };
     defer args.deinit();
 
-//    std.log.debug("{d}", .{std.fmt.parseUnsigned(u16, (args.option("-p") orelse config._port), 0)});
+    if (args.option("--dir") == null) {
+        std.log.err("missing argument --dir",.{});
+        try clap.help(std.io.getStdErr().writer(),&params);
+        std.os.exit(1);
+    }
 
     var db = try Database.open(try std.fs.path.join(allocator, &[2][]const u8{ args.option("--dir") orelse config._data_dir, ".db" }));
     const port = try std.fmt.parseUnsigned(u16, (args.option("--port") orelse config._port), 0);

@@ -30,6 +30,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.linkLibC();
+    // link lmdb c source files
     exe.addIncludeDir("deps/liblmdb/libraries/liblmdb");
     exe.addCSourceFiles(&[2][]const u8{ "deps/liblmdb/libraries/liblmdb/mdb.c", "deps/liblmdb/libraries/liblmdb/midl.c" }, &[1][]const u8{
         "-fno-sanitize=undefined",

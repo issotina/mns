@@ -2,3 +2,4 @@ zig-cache
 zig-out
 .db/
 .vscode/
+test-data/

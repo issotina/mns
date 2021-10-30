@@ -7,3 +7,7 @@
 [submodule "deps/liblmdb"]
 	path = deps/liblmdb
 	url = https://github.com/LMDB/lmdb.git
+[submodule "deps/zig-clap"]
+	path = deps/zig-clap
+	url = https://github.com/issotina/zig-clap.git
+	branch = zig-master

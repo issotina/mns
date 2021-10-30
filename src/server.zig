@@ -35,7 +35,7 @@ const Client = struct {
             .resources = std.ArrayList(DnsRecord).init(allocator),
         };
         try pk.fromBuffer(&pk_buffer_r);
-        const res = try functions.processDNSRequest(allocator, &pk, conn.db) ;
+        const res = try functions.processDNSRequest(allocator, &pk, conn.db);
 
         _ = conn.server.sendTo(this.peer, res) catch |err| {
             std.log.err("failed to send response to {}: {v}", .{ this.peer, err });
@@ -53,12 +53,19 @@ pub const Server = struct {
     server: Socket,
     options: struct { ip: IPv4, port: u16 },
 
-    pub fn init(ip: IPv4, port: u16) !Server {
+    pub fn init(ip: []const u8, port: u16) !Server {
+        if (ip.len < 7) return error.InvalidIP;
         try network.init();
 
         var srv = try network.Socket.create(.ipv4, .udp);
-        srv.enablePortReuse(true);
-        return Server{ .server = srv, .options = .{ .ip = ip, .port = port } };
+        try srv.enablePortReuse(true);
+
+        var it = std.mem.split(u8, ip, ".");
+        return Server{ .server = srv, .options = .{ .ip = IPv4.init(parseu8(it.next().?), parseu8(it.next().?), parseu8(it.next().?), parseu8(it.next().?)), .port = port } };
+    }
+
+    fn parseu8(buf: []const u8) u8 {
+        return std.fmt.parseUnsigned(u8, buf, 0) catch unreachable;
     }
 
     pub fn startWithDB(this: *Server, db: *Database) !void {

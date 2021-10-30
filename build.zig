@@ -9,6 +9,10 @@ const pkgs = struct {
         .name = "lmdb",
         .path = .{ .path = "deps/lmdb/lmdb.zig" },
     };
+    const clap = std.build.Pkg{
+        .name = "clap",
+        .path = .{ .path = "deps/zig-clap/clap.zig" },
+    };
 };
 
 pub fn build(b: *std.build.Builder) void {
@@ -32,6 +36,7 @@ pub fn build(b: *std.build.Builder) void {
     });
     exe.addPackage(pkgs.network);
     exe.addPackage(pkgs.lmdb);
+    exe.addPackage(pkgs.clap);
     exe.install();
 
     const run_cmd = exe.run();

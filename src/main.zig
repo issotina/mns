@@ -2,14 +2,36 @@ const std = @import("std");
 const Database = @import("database.zig").Database;
 const Server = @import("server.zig").Server;
 const IPv4 = @import("server.zig").IPv4;
+const clap = @import("clap");
+const config = @import("config.zig");
+const allocator = std.heap.page_allocator;
 
 pub fn main() anyerror!void {
-    var db = try Database.open("/Users/shadai/Envirronement/mns/.db");
-    
-   // try db.loadFile("/Users/shadai/Envirronement/mns/deps/initial-data");
-   var server = try Server.init(IPv4.init(127, 0, 0, 1), 5000);
+    const params = comptime [_]clap.Param(clap.Help){
+        clap.parseParam("-h, --help             Display this help and exit.              ") catch unreachable,
+        clap.parseParam("-v, --verbosity <NUM>  the log level in increasing order of verbosity(1..7)") catch unreachable,
+        clap.parseParam("-i, --address <STR> the default network interface address to listen on") catch unreachable,
+        clap.parseParam("-p, --port <NUM>    default port for dns server") catch unreachable,
+        clap.parseParam("-d, --dir <STR>    where data files should be persisted") catch unreachable,
+    };
+    var iter = try clap.args.OsIterator.init(allocator);
+    defer iter.deinit();
+    var diag = clap.Diagnostic{};
+    var args = clap.parseEx(clap.Help, &params, &iter, .{
+        .allocator = allocator,
+        .diagnostic = &diag,
+    }) catch |err| {
+        diag.report(std.io.getStdErr().writer(), err) catch {};
+        return err;
+    };
+    defer args.deinit();
 
-   // TODO: Graceful shutdown and memory release 
+//    std.log.debug("{d}", .{std.fmt.parseUnsigned(u16, (args.option("-p") orelse config._port), 0)});
+
+    var db = try Database.open(try std.fs.path.join(allocator, &[2][]const u8{ args.option("--dir") orelse config._data_dir, ".db" }));
+    const port = try std.fmt.parseUnsigned(u16, (args.option("--port") orelse config._port), 0);
+    var server = try Server.init(args.option("--address") orelse config._address, port);
+
     server.startWithDB(&db) catch |err| {
         std.log.err("failed to start server: {}", .{err});
     };
